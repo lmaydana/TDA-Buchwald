@@ -14,27 +14,35 @@ def juego_sophia_mateo(monedas):
     monedas_sophia = []
     monedas_mateo = []
     es_turno_de_sophia = True
-    
-    while len(monedas) > 0:
+    ini = 0
+    fin = len(monedas) - 1
+    while ini <= fin:
         if es_turno_de_sophia:
-            moneda = monedas.pop(posicion_moneda(monedas, maximo=True))
-            monedas_sophia.append(moneda)
+            posicion_moneda_a_agregar = posicion_moneda(monedas, ini, fin, maximo=True)
+            monedas_sophia.append(monedas[posicion_moneda_a_agregar])
+            if posicion_moneda_a_agregar == fin:
+                fin -= 1
+            else:
+                ini += 1
         else:
-            moneda = monedas.pop(posicion_moneda(monedas, maximo=False))
-            monedas_mateo.append(moneda)
-        
+            posicion_moneda_a_agregar = posicion_moneda(monedas, ini, fin, maximo=False)
+            monedas_mateo.append(monedas[posicion_moneda_a_agregar])
+            if posicion_moneda_a_agregar == fin:
+                fin -= 1
+            else:
+                ini += 1
         es_turno_de_sophia = not es_turno_de_sophia
-    
+
     sumatoria_sophia = sum(monedas_sophia)
     sumatoria_mateo = sum(monedas_mateo)
     return sumatoria_sophia > sumatoria_mateo
 
-def posicion_moneda(monedas, maximo):
+def posicion_moneda(monedas, ini, fin, maximo):
     if maximo:
-        if monedas[0] >= monedas[-1]:
-            return 0
-        return len(monedas) - 1
+        if monedas[ini] >= monedas[fin]:
+            return ini
+        return fin
     else:
-        if monedas[0] < monedas[-1]:
-            return 0
-        return len(monedas) - 1
+        if monedas[ini] < monedas[fin]:
+            return ini
+        return fin
