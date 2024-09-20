@@ -1,3 +1,3 @@
 # TDA-Buchwald
 ## A second-level headingEl programa puede ser ejecutado a traves de la consola con el comando de python pertinente a la version del mismo, especificando el nombre del archivo a ejecutar(para el caso, main.py) y pasando, como argumento, el archivo de texto que especifique la disposicón de las monedas en el juego, la estructura que debe seguir el mismo para que sea considerado debe ser la misma que la de los archivos de texto de prubas presentados por la catedra, un ejemplo sería ubicarse con la consola en la carpeta que contiene el archivo main.py y escribir el comando:
-'''python3 main.py pruebas/20000.txt'''
+***python3 main.py pruebas/20000.txt***
