@@ -31,8 +31,6 @@ def juego_sophia_mateo(monedas):
     return monedas_sophia, monedas_mateo
 
 
-    return monedas_sophia, monedas_mateo
-
 def posicion_moneda(monedas, ini, fin, maximo):
     if maximo:
         if monedas[ini] >= monedas[fin]:
