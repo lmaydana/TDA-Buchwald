@@ -78,20 +78,10 @@ def rearmar_solucion(matriz, monedas):
 
 
 def siguientes_indices_eligiendo_mateo(ini, fin, monedas):
-    if monedas[fin] > monedas[ini]:
+    if monedas[fin] >= monedas[ini]:
         return ini, fin - 1
     else: 
         return ini + 1, fin
-
-def posicion_moneda(monedas, ini, fin, maximo):
-    if maximo:
-        if monedas[ini] >= monedas[fin]:
-            return ini
-        return fin
-    else:
-        if monedas[ini] < monedas[fin]:
-            return ini
-        return fin
 
 def devolver_ganancia(monedas, monedas_jugador):
     ganancia = 0
