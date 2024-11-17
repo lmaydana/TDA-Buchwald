@@ -43,7 +43,7 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    nombre_archivo = "tests/30_25_25.txt" #input("Ingrese ruta:")
+    nombre_archivo = "tests/3_3_2.txt" #input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
     print("Demandas de filas:", demandas_filas)
     print("Demandas de columnas:", demandas_columnas)
@@ -57,6 +57,6 @@ def main():
     demanda, mejor_tablero = bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
 
     print(mejor_tablero)
-    print(f"Demanda: {demanda}")
+    print(f"Demanda ja: {demanda}")
 
 main()
