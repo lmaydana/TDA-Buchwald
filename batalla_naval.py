@@ -72,19 +72,17 @@ def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco):
 
 def obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas, tablero):
     """
-    Obtiene listas de filas y columnas priorizadas por demanda restante relativa (mayor urgencia).
+    Obtiene listas de filas y columnas priorizadas por demanda restante absoluta (mayor urgencia).
     """
     # Demanda restante en filas y columnas.
-    demanda_restante_filas = demandas_filas - (tablero != 0).sum(axis=1)
-    demanda_restante_columnas = demandas_columnas - (tablero != 0).sum(axis=0)
+    demanda_restante_filas, demanda_restante_columnas = calcular_demandas_restantes(tablero, demandas_filas, demandas_columnas)
 
-    # Evitar divisiones por 0.
-    demanda_relativa_filas = np.where(demandas_filas > 0, demanda_restante_filas / demandas_filas, 0)
-    demanda_relativa_columnas = np.where(demandas_columnas > 0, demanda_restante_columnas / demandas_columnas, 0)
+    # Priorizar por la demanda restante absoluta (filas/columnas con mayor demanda restante primero).
+    filas_prioritarias = np.argsort(-demanda_restante_filas).tolist()
+    columnas_prioritarias = np.argsort(-demanda_restante_columnas).tolist()
 
-    # Ordenar por demanda restante relativa (prioridad alta para valores mas cercanos a 1).
-    filas_prioritarias = np.argsort(-demanda_relativa_filas).tolist()
-    columnas_prioritarias = np.argsort(-demanda_relativa_columnas).tolist()
+    print(f"Filas prioritarias: {filas_prioritarias}")
+    print(f"Columnas prioritarias: {columnas_prioritarias}")
 
     return filas_prioritarias, columnas_prioritarias
 
@@ -122,12 +120,12 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
     # Ordenar los barcos de mayor a menor longitud.
     barcos = sorted(barcos, reverse=True)
     demanda_cumplida_inicial = 0
-    return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida_inicial)
+    return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida_inicial, 0, 0)
 
 
-def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida, indice=0, mejor_cumplida=0):
+def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida, indice, mejor_cumplida):
     # Caso base: todos los barcos han sido procesados.
-    if indice == len(barcos):
+    if indice >= len(barcos):
         demanda_total = demandas_filas.sum() + demandas_columnas.sum()
         demanda_incumplida = demanda_total - demanda_cumplida
         if demanda_cumplida > mejor_cumplida:
@@ -137,12 +135,13 @@ def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda
             print(f"Demanda cumplida: {demanda_cumplida}, Demanda incumplida: {demanda_incumplida}")
         return mejor_cumplida, tablero.copy()
 
+    
     barco = barcos[indice]
     id_barco = indice + 1  # Identificador unico para el barco.
     mejor_tablero = None  # Tablero asociado a la mejor solucion.
 
     # Obtener filas y columnas priorizadas.
-    filas_prioritarias, columnas_prioritarias = obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas, tablero)
+    filas_prioritarias, columnas_prioritarias = obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas, tablero.copy())
 
     # Probar todas las combinaciones de posicion y orientacion.
     for fila in filas_prioritarias:
@@ -158,7 +157,7 @@ def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda
                         resultado_cumplida, resultado_tablero = batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, nueva_cumplida, indice + 1, mejor_cumplida)
                         if resultado_cumplida > mejor_cumplida:
                             mejor_cumplida = resultado_cumplida
-                            mejor_tablero = resultado_tablero
+                            mejor_tablero = resultado_tablero.copy()
 
                     # Retirar barco.
                     colocar_barco(tablero, barco, fila, columna, orientacion, 0)
