@@ -1,5 +1,6 @@
-import batalla_naval as bn
+import batalla_naval_greedy as bn
 import numpy as np
+import verificador_eficiente as ve
 
 def cargar_datos_archivo(nombre_archivo):
     """
@@ -43,7 +44,7 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    nombre_archivo = "tests/3_3_2.txt" #input("Ingrese ruta:")
+    nombre_archivo = "tests/10_10_10.txt" #input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
     print("Demandas de filas:", demandas_filas)
     print("Demandas de columnas:", demandas_columnas)
@@ -55,6 +56,7 @@ def main():
     tablero = np.zeros((len(demandas_filas), len(demandas_columnas)), dtype=int)
 
     demanda, mejor_tablero = bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
+    print(f"Es solucion optima? {ve.verificador_eficiente(mejor_tablero, largos_barcos, demandas_filas, demandas_columnas)}")
 
     print(mejor_tablero)
     print(f"Demanda ja: {demanda}")

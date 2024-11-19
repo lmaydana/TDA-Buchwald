@@ -122,7 +122,9 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
     # Ordenar los barcos de mayor a menor longitud.
     barcos = sorted(barcos, reverse=True)
     demanda_cumplida_inicial = 0
-    return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida_inicial)
+    mejor_cumplida, mejor_tablero = batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida_inicial)
+    print(f"{mejor_cumplida=}, {mejor_tablero=}")
+    return mejor_cumplida, mejor_tablero
 
 
 def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida, indice=0, mejor_cumplida=0):
