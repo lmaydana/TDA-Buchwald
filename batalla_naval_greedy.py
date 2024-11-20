@@ -2,7 +2,6 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 	demandas_columnas_pos = [["c", i, demandas_columnas[i]] for i in range(len(demandas_columnas))]
 	demandas_filas_pos= [["f", i, demandas_filas[i]] for i in range(len(demandas_filas))]
 	demandas_totales = demandas_columnas_pos + demandas_filas_pos
-	demandas_totales.sort(key=obtener_demanda)
 	barcos_aux = [(n, barcos[n]) for n in range(len(barcos))]
 	barcos_aux.sort(key=lambda numero_largo_barco: numero_largo_barco[1]*(-1))
 	while barcos_aux and existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_columnas_pos, demandas_totales, barcos_aux):
@@ -29,7 +28,7 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 				demandas_filas_pos[posicion + j][2] -= 1
 		barcos_aux.pop(pos_barco)
 		info_demanda[2] -= largo_barco
-	return devolver_demanda_total_cumplida(demandas_totales), tablero
+	return (sum(demandas_filas) + sum(demandas_columnas) - devolver_demanda_total_cumplida(demandas_totales)), tablero
 
 def devolver_demanda_total_cumplida(demandas_totales):
 	demanda_cumplida = 0
@@ -49,12 +48,6 @@ def existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_colu
 		if encontrar_posicion(tablero, demanda[0], demanda[1], largo_barco_mas_chico, demandas_filas_pos, demandas_columnas_pos) != -1:
 			return True 
 	return False
-
-def obtener_suma_demanda(demandas):
-	suma = 0
-	for info_demanda in demandas:
-		suma += info_demanda[2]
-	return suma
 
 def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas_filas_pos, demandas_columnas_pos):
 	espacios_libres_continuos = 0
@@ -77,7 +70,7 @@ def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas
 			else:
 				espacios_libres_continuos = 0
 			if espacios_libres_continuos == largo_barco:
-				siguiente_fila = fila + 1 if fila + 1 < len(tablero[pos_demanda]) else fila
+				siguiente_fila = fila + 1 if fila + 1 < len(tablero) else fila
 				fila_anterior = fila - largo_barco if fila - largo_barco >= 0 else fila + 1 - largo_barco
 				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0:
 					return fila + 1 - largo_barco

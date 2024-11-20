@@ -1,4 +1,4 @@
-import batalla_naval as bn
+import batalla_naval_greedy as bn
 import numpy as np
 
 def cargar_datos_archivo(nombre_archivo):
@@ -43,8 +43,9 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    nombre_archivo = "tests/5_5_6.txt" #input("Ingrese ruta:")
+    nombre_archivo = "tests/20_20_20.txt" #input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
+    print(nombre_archivo + ", greedy_propio")
     print("Demandas de filas:", demandas_filas)
     print("Demandas de columnas:", demandas_columnas)
     print("Largos de los barcos:", largos_barcos)
