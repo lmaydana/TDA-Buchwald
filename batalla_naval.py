@@ -15,59 +15,107 @@ def calcular_demanda_cumplida(tablero, demandas_filas, demandas_columnas):
     return cumplida_filas + cumplida_columnas
 
 
-
 def puede_colocar_barco(tablero, barco, fila, columna, orientacion, demandas_filas, demandas_columnas):
     """
-    Verifica si es posible colocar un barco respetando:
-    - Restricciones de adyacencia.
-    - Que no exceda las demandas de filas y columnas.
+    Verifica si es posible colocar un barco en cualquier dirección (derecha/izquierda o abajo/arriba)
+    respetando las restricciones de:
+    - Adyacencia.
+    - Demandas de filas y columnas.
     """
     filas, columnas = tablero.shape
 
-    if orientacion == 'H':  # Horizontal.
-        if columna + barco > columnas:
-            return False
-        if any(tablero[fila, columna:columna + barco] != 0):
-            return False
-        if demandas_filas[fila] - (tablero[fila] != 0).sum() < barco:
-            return False
-        for j in range(columna, columna + barco):
-            if demandas_columnas[j] - (tablero[:, j] != 0).sum() < 1:
-                return False
-        for i in range(max(0, fila - 1), min(filas, fila + 2)):
-            for j in range(max(0, columna - 1), min(columnas, columna + barco + 1)):
-                if tablero[i, j] != 0 and (i != fila or j < columna or j >= columna + barco):
-                    return False
+    if orientacion == 'H':  # Horizontal
+        # Verificar hacia la derecha
+        if columna + barco <= columnas:
+            if all(tablero[fila, columna:columna + barco] == 0) and \
+                    demandas_filas[fila] - (tablero[fila] != 0).sum() >= barco and \
+                    all(demandas_columnas[j] - (tablero[:, j] != 0).sum() >= 1 for j in range(columna, columna + barco)):
+                # Verificar adyacencia
+                if all(tablero[max(0, fila - 1):min(filas, fila + 2), max(0, columna - 1):min(columnas, columna + barco + 1)].flatten() == 0):
+                    return True
 
-    elif orientacion == 'V':  # Vertical.
-        if fila + barco > filas:
-            return False
-        if any(tablero[fila:fila + barco, columna] != 0):
-            return False
-        if demandas_columnas[columna] - (tablero[:, columna] != 0).sum() < barco:
-            return False
-        for i in range(fila, fila + barco):
-            if demandas_filas[i] - (tablero[i] != 0).sum() < 1:
-                return False
-        for i in range(max(0, fila - 1), min(filas, fila + barco + 1)):
-            for j in range(max(0, columna - 1), min(columnas, columna + 2)):
-                if tablero[i, j] != 0 and (j != columna or i < fila or i >= fila + barco):
-                    return False
+        # Verificar hacia la izquierda
+        if columna - barco + 1 >= 0:
+            if all(tablero[fila, columna - barco + 1:columna + 1] == 0) and \
+                    demandas_filas[fila] - (tablero[fila] != 0).sum() >= barco and \
+                    all(demandas_columnas[j] - (tablero[:, j] != 0).sum() >= 1 for j in range(columna - barco + 1, columna + 1)):
+                # Verificar adyacencia
+                if all(tablero[max(0, fila - 1):min(filas, fila + 2), max(0, columna - barco):min(columnas, columna + 2)].flatten() == 0):
+                    return True
 
-    return True
+    elif orientacion == 'V':  # Vertical
+        # Verificar hacia abajo
+        if fila + barco <= filas:
+            if all(tablero[fila:fila + barco, columna] == 0) and \
+                    demandas_columnas[columna] - (tablero[:, columna] != 0).sum() >= barco and \
+                    all(demandas_filas[i] - (tablero[i] != 0).sum() >= 1 for i in range(fila, fila + barco)):
+                # Verificar adyacencia
+                if all(tablero[max(0, fila - 1):min(filas, fila + barco + 1), max(0, columna - 1):min(columnas, columna + 2)].flatten() == 0):
+                    return True
+
+        # Verificar hacia arriba
+        if fila - barco + 1 >= 0:
+            if all(tablero[fila - barco + 1:fila + 1, columna] == 0) and \
+                    demandas_columnas[columna] - (tablero[:, columna] != 0).sum() >= barco and \
+                    all(demandas_filas[i] - (tablero[i] != 0).sum() >= 1 for i in range(fila - barco + 1, fila + 1)):
+                # Verificar adyacencia
+                if all(tablero[max(0, fila - barco):min(filas, fila + 2), max(0, columna - 1):min(columnas, columna + 2)].flatten() == 0):
+                    return True
+
+    return False
 
 
-def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco):
+def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas):
     """
-    Coloca o retira un barco en el tablero y actualiza las demandas.
+    Coloca o retira un barco en el tablero, eligiendo la dirección en función de las demandas.
+    - Si es horizontal ('H'), elige extenderse a la derecha o izquierda según la demanda de columnas.
+    - Si es vertical ('V'), elige extenderse hacia arriba o abajo según la demanda de filas.
     """
-    for i in range(barco):
-        if orientacion == 'H':
-            tablero[fila][columna + i] = id_barco if id_barco != 0 else 0
+    n, m = tablero.shape
 
-        elif orientacion == 'V':
-            tablero[fila + i][columna] = id_barco if id_barco != 0 else 0
+    if orientacion == 'H':
+        # Comparar demandas a derecha e izquierda
+        derecha_valida = columna + barco <= m and all(tablero[fila, columna:columna + barco] == 0)
+        izquierda_valida = columna - barco + 1 >= 0 and all(tablero[fila, columna - barco + 1:columna + 1] == 0)
 
+        demanda_derecha = sum(demandas_columnas[columna:columna + barco]) if derecha_valida else -1
+        demanda_izquierda = sum(demandas_columnas[columna - barco + 1:columna + 1]) if izquierda_valida else -1
+
+        if demanda_derecha >= demanda_izquierda and derecha_valida:
+            for i in range(barco):
+                tablero[fila][columna + i] = id_barco if id_barco != 0 else 0
+        elif izquierda_valida:
+            for i in range(barco):
+                tablero[fila][columna - i] = id_barco if id_barco != 0 else 0
+
+    elif orientacion == 'V':
+        # Comparar demandas hacia abajo y hacia arriba
+        abajo_valida = fila + barco <= n and all(tablero[fila:fila + barco, columna] == 0)
+        arriba_valida = fila - barco + 1 >= 0 and all(tablero[fila - barco + 1:fila + 1, columna] == 0)
+
+        demanda_abajo = sum(demandas_filas[fila:fila + barco]) if abajo_valida else -1
+        demanda_arriba = sum(demandas_filas[fila - barco + 1:fila + 1]) if arriba_valida else -1
+
+        if demanda_abajo >= demanda_arriba and abajo_valida:
+            for i in range(barco):
+                tablero[fila + i][columna] = id_barco if id_barco != 0 else 0
+        elif arriba_valida:
+            for i in range(barco):
+                tablero[fila - i][columna] = id_barco if id_barco != 0 else 0
+
+
+def sacar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas):
+    n, m = tablero.shape
+    cambiados = 0
+    for i in range(n):
+        for j in range(m):
+            if cambiados == barco:
+                break
+            if tablero[i][j] == id_barco:
+                tablero[i][j] = 0
+                cambiados += 1
+                demandas_filas[i] += 1
+                demandas_columnas[j] += 1
 
 
 def obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas, tablero):
@@ -103,69 +151,55 @@ def calcular_demandas_restantes(tablero, demandas_filas, demandas_columnas):
     return demandas_restantes_filas, demandas_restantes_columnas
 
 
-def evaluar_posicion(tablero, barco, fila, columna, orientacion, demandas_restantes_filas, demandas_restantes_columnas):
-    """
-    Evalua la cantidad de demanda cumplida al colocar un barco en la posicion y orientacion dadas.
-    """
-    demanda_cumplida = 0
-    for i in range(barco):
-        if orientacion == 'H' and columna + i < len(tablero[0]):
-            demanda_cumplida += demandas_restantes_filas[fila] + demandas_restantes_columnas[columna + i]
-        elif orientacion == 'V' and fila + i < len(tablero):
-            demanda_cumplida += demandas_restantes_filas[fila + i] + demandas_restantes_columnas[columna]
-    return demanda_cumplida
-
-
 def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
     # Ordenar los barcos de mayor a menor longitud.
     barcos = sorted(barcos, reverse=True)
     demanda_cumplida_inicial = 0
-    return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida_inicial, 0, 0)
+    return batalla_naval_bt(tablero, demanda_cumplida_inicial, barcos, demandas_filas, demandas_columnas, 0, 0, tablero)
 
 
-def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida, indice, mejor_cumplida):
+def batalla_naval_bt(tablero, demanda_cumplida, barcos, demandas_filas, demandas_columnas, indice, mejor_cumplida, mejor_tablero):
     # Caso base: todos los barcos han sido procesados.
+    if demanda_cumplida > mejor_cumplida:
+        mejor_cumplida = demanda_cumplida
+        mejor_tablero = tablero.copy()
+
     if indice >= len(barcos):
         demanda_total = demandas_filas.sum() + demandas_columnas.sum()
         demanda_incumplida = demanda_total - demanda_cumplida
         if demanda_cumplida > mejor_cumplida:
             mejor_cumplida = demanda_cumplida
+            mejor_tablero = tablero.copy()
             print(f"Nueva mejor solución encontrada:")
             print(tablero)
             print(f"Demanda cumplida: {demanda_cumplida}, Demanda incumplida: {demanda_incumplida}")
-        return mejor_cumplida, tablero.copy()
-
+        return mejor_cumplida, mejor_tablero
     
+
     barco = barcos[indice]
     id_barco = indice + 1  # Identificador unico para el barco.
-    mejor_tablero = None  # Tablero asociado a la mejor solucion.
 
     # Obtener filas y columnas priorizadas.
     filas_prioritarias, columnas_prioritarias = obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas, tablero.copy())
 
     # Probar todas las combinaciones de posicion y orientacion.
     for fila in filas_prioritarias:
+        if demandas_filas[fila] == 0: continue
         for columna in columnas_prioritarias:
+            if demandas_columnas[columna] == 0: continue
             for orientacion in ['V', 'H']:
                 if puede_colocar_barco(tablero, barco, fila, columna, orientacion, demandas_filas, demandas_columnas):
                     # Colocar barco.
-                    colocar_barco(tablero, barco, fila, columna, orientacion, id_barco)
-                    nueva_cumplida = calcular_demanda_cumplida(tablero, demandas_filas, demandas_columnas)
-
-                    # Poda.
-                    if nueva_cumplida > mejor_cumplida:
-                        resultado_cumplida, resultado_tablero = batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, nueva_cumplida, indice + 1, mejor_cumplida)
-                        if resultado_cumplida > mejor_cumplida:
-                            mejor_cumplida = resultado_cumplida
+                    colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas)
+                    demanda_cumplida = calcular_demanda_cumplida(tablero, demandas_filas, demandas_columnas)
+                    #if demanda_cumplida >= mejor_cumplida:    
+                    if demanda_cumplida > mejor_cumplida:
+                        resultado_cumplido, resultado_tablero = batalla_naval_bt(tablero, demanda_cumplida, barcos, demandas_filas, demandas_columnas, indice + 1, mejor_cumplida, mejor_tablero)
+                        if resultado_cumplido > mejor_cumplida:
+                            mejor_cumplida = resultado_cumplido
                             mejor_tablero = resultado_tablero.copy()
-
                     # Retirar barco.
-                    colocar_barco(tablero, barco, fila, columna, orientacion, 0)
+                    sacar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas)
 
-    # Omitir barco actual.
-    resultado_cumplida, resultado_tablero = batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, demanda_cumplida, indice + 1, mejor_cumplida)
-    if resultado_cumplida > mejor_cumplida:
-        mejor_cumplida = resultado_cumplida
-        mejor_tablero = resultado_tablero
+    return batalla_naval_bt(tablero, demanda_cumplida, barcos, demandas_filas, demandas_columnas, indice + 1, mejor_cumplida, mejor_tablero)
 
-    return mejor_cumplida, mejor_tablero
