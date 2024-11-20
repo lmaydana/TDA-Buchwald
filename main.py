@@ -43,7 +43,7 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    nombre_archivo = "tests/10_10_10.txt" #input("Ingrese ruta:")
+    nombre_archivo = "tests/5_5_6.txt" #input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
     print("Demandas de filas:", demandas_filas)
     print("Demandas de columnas:", demandas_columnas)
