@@ -5,7 +5,7 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 	demandas_totales.sort(key=obtener_demanda)
 	barcos_aux = [(n, barcos[n]) for n in range(len(barcos))]
 	barcos_aux.sort(key=lambda numero_largo_barco: numero_largo_barco[1]*(-1))
-	while barcos_aux and existe_barco_que_entre_en_demanda(demandas_totales, barcos_aux):
+	while barcos_aux and existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_columnas_pos, demandas_totales, barcos_aux):
 		info_demanda = max(demandas_totales, key=obtener_demanda)
 		tipo_demanda = info_demanda[0]
 		pos_demanda = info_demanda[1]
@@ -38,10 +38,23 @@ def devolver_demanda_total_cumplida(demandas_totales):
 	return demanda_cumplida
 
 
-def existe_barco_que_entre_en_demanda(demandas_totales, barcos_aux):
-	maxima_demanda = max(demandas_totales, key=obtener_demanda)[2]
+def existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_columnas_pos, demandas_totales, barcos_aux):
+	demandas_totales_aux = demandas_totales.copy()
+	demandas_totales_aux.sort(key=obtener_demanda)
+	demandas_totales_aux.reverse()
 	largo_barco_mas_chico = barcos_aux[-1][1]
-	return largo_barco_mas_chico <= maxima_demanda
+	for demanda in demandas_totales_aux:
+		if demanda[0] == "f" and demandas_filas_pos[demanda[1]][2] < largo_barco_mas_chico or demanda[0] == "c" and demandas_columnas_pos[demanda[1]][2] < largo_barco_mas_chico:
+			return False
+		if encontrar_posicion(tablero, demanda[0], demanda[1], largo_barco_mas_chico, demandas_filas_pos, demandas_columnas_pos) != -1:
+			return True 
+	return False
+
+def obtener_suma_demanda(demandas):
+	suma = 0
+	for info_demanda in demandas:
+		suma += info_demanda[2]
+	return suma
 
 def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas_filas_pos, demandas_columnas_pos):
 	espacios_libres_continuos = 0
