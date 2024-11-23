@@ -1,4 +1,4 @@
-import batalla_naval_greedy as bn
+import batalla_naval_programacion_lineal as bn
 import numpy as np
 
 def cargar_datos_archivo(nombre_archivo):
@@ -43,9 +43,12 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    nombre_archivo = "tests/20_20_20.txt" #input("Ingrese ruta:")
+
+    archivo_pruebas = ["tests/3_3_2.txt", "tests/5_5_6.txt", "tests/8_7_10.txt", "tests/10_3_3.txt", "tests/10_10_10.txt", "tests/12_12_21.txt", "tests/15_10_15.txt", "tests/20_20_20.txt", "tests/20_25_30.txt", "tests/30_25_25.txt"]
+    #for nombre_archivo in archivo_pruebas:
+    nombre_archivo = "tests/5_5_6.txt" #input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
-    print(nombre_archivo + ", greedy_propio")
+    print(nombre_archivo + ", greedy_catedra")
     print("Demandas de filas:", demandas_filas)
     print("Demandas de columnas:", demandas_columnas)
     print("Largos de los barcos:", largos_barcos)
@@ -54,7 +57,7 @@ def main():
     demandas_columnas = np.array(demandas_columnas)
 
     tablero = np.zeros((len(demandas_filas), len(demandas_columnas)), dtype=int)
-
+    #bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
     demanda, mejor_tablero = bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
 
     print(mejor_tablero)

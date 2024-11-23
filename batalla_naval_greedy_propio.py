@@ -8,7 +8,7 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 	barcos_usados = {}
 	for demanda in demandas_totales:
 		for barco in barcos_aux:
-			if barco in barcos_usados:
+			if barco in barcos_usados or barco[1] > demanda[2]:
 				continue
 			posicion = encontrar_posicion(tablero, demanda[0], demanda[1], barco[1], demandas_filas_pos, demandas_columnas_pos)
 			if posicion != -1:
@@ -30,12 +30,9 @@ def devolver_demanda_total_cumplida(demandas_totales):
 		demanda_cumplida += info_demanda[2]
 	return demanda_cumplida
 
-
 def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas_filas_pos, demandas_columnas_pos):
 	espacios_libres_continuos = 0
 	if tipo_demanda == "f":
-		if demandas_filas_pos[pos_demanda][2] < largo_barco:
-			return -1
 		for columna in range(len(tablero[pos_demanda])):
 			if tablero[pos_demanda][columna] == 0 and demandas_columnas_pos[columna][2] > 0:
 				espacios_libres_continuos += 1
@@ -44,12 +41,17 @@ def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas
 			if espacios_libres_continuos == largo_barco:
 				siguiente_columna = columna + 1 if columna + 1 < len(tablero[pos_demanda]) else columna
 				columna_anterior = columna - largo_barco if columna - largo_barco >= 0 else columna + 1 - largo_barco
-				if tablero[pos_demanda][siguiente_columna] == 0 and tablero[pos_demanda][columna_anterior] == 0:
+				fila_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
+				fila_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero) else pos_demanda - 1
+				fila_libre = True
+				for col in range(columna_anterior, siguiente_columna + 1):
+
+					if tablero[fila_anterior][col] != 0 or tablero[fila_siguiente][col] != 0:
+						fila_libre = False
+				if tablero[pos_demanda][siguiente_columna] == 0 and tablero[pos_demanda][columna_anterior] == 0 and fila_libre:
 					return columna + 1 - largo_barco
 				espacios_libres_continuos = 0
 	else:
-		if demandas_columnas_pos[pos_demanda][2] < largo_barco:
-			return -1
 		for fila in range(len(tablero)):
 			if tablero[fila][pos_demanda] == 0  and demandas_filas_pos[fila][2] > 0:
 				espacios_libres_continuos += 1
@@ -58,7 +60,13 @@ def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas
 			if espacios_libres_continuos == largo_barco:
 				siguiente_fila = fila + 1 if fila + 1 < len(tablero) else fila
 				fila_anterior = fila - largo_barco if fila - largo_barco >= 0 else fila + 1 - largo_barco
-				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0:
+				columna_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
+				columna_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero[0]) else pos_demanda - 1
+				columna_libre = True
+				for fil in range(fila_anterior, siguiente_fila + 1):
+					if tablero[fil][columna_anterior] != 0 or tablero[fil][columna_siguiente] != 0:
+						columna_libre = False
+				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0 and columna_libre:
 					return fila + 1 - largo_barco
 				espacios_libres_continuos = 0
 	return -1

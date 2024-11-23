@@ -10,14 +10,17 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 		pos_demanda = info_demanda[1]
 		cantidad_demanda = info_demanda[2]
 		pos_barco = 0
-		while pos_barco < len(barcos_aux) and (barcos_aux[pos_barco][1] > cantidad_demanda or barcos_aux[pos_barco][1] > maxima_cantidad_de_contiguos_disponibles(tablero, tipo_demanda, pos_demanda, demandas_filas_pos, demandas_columnas_pos)):
+		posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, barcos_aux[pos_barco][1] , demandas_filas_pos, demandas_columnas_pos)
+		while pos_barco < len(barcos_aux) and (barcos_aux[pos_barco][1] > cantidad_demanda or posicion == -1):
 			pos_barco += 1
+			if pos_barco < len(barcos_aux):
+				posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, barcos_aux[pos_barco][1] , demandas_filas_pos, demandas_columnas_pos)
 		
 		if pos_barco >= len(barcos_aux):
 		    demandas_totales.remove(info_demanda)
 		    continue
 		largo_barco = barcos_aux[pos_barco][1]
-		posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco , demandas_filas_pos, demandas_columnas_pos)
+
 		if tipo_demanda == "f":
 			for j in range(largo_barco):
 				tablero[pos_demanda][posicion + j] = barcos_aux[pos_barco][0] + 1
@@ -28,7 +31,8 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 				demandas_filas_pos[posicion + j][2] -= 1
 		barcos_aux.pop(pos_barco)
 		info_demanda[2] -= largo_barco
-	return (sum(demandas_filas) + sum(demandas_columnas) - devolver_demanda_total_cumplida(demandas_totales)), tablero
+
+	return (sum(demandas_filas) + sum(demandas_columnas) - devolver_demanda_total_cumplida(demandas_filas_pos) - devolver_demanda_total_cumplida(demandas_columnas_pos)), tablero
 
 def devolver_demanda_total_cumplida(demandas_totales):
 	demanda_cumplida = 0
@@ -60,7 +64,14 @@ def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas
 			if espacios_libres_continuos == largo_barco:
 				siguiente_columna = columna + 1 if columna + 1 < len(tablero[pos_demanda]) else columna
 				columna_anterior = columna - largo_barco if columna - largo_barco >= 0 else columna + 1 - largo_barco
-				if tablero[pos_demanda][siguiente_columna] == 0 and tablero[pos_demanda][columna_anterior] == 0:
+				fila_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
+				fila_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero) else pos_demanda - 1
+				fila_libre = True
+				for col in range(columna_anterior, siguiente_columna + 1):
+
+					if tablero[fila_anterior][col] != 0 or tablero[fila_siguiente][col] != 0:
+						fila_libre = False
+				if tablero[pos_demanda][siguiente_columna] == 0 and tablero[pos_demanda][columna_anterior] == 0 and fila_libre:
 					return columna + 1 - largo_barco
 				espacios_libres_continuos = 0
 	else:
@@ -72,41 +83,16 @@ def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas
 			if espacios_libres_continuos == largo_barco:
 				siguiente_fila = fila + 1 if fila + 1 < len(tablero) else fila
 				fila_anterior = fila - largo_barco if fila - largo_barco >= 0 else fila + 1 - largo_barco
-				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0:
+				columna_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
+				columna_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero[0]) else pos_demanda - 1
+				columna_libre = True
+				for fil in range(fila_anterior, siguiente_fila + 1):
+					if tablero[fil][columna_anterior] != 0 or tablero[fil][columna_siguiente] != 0:
+						columna_libre = False
+				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0 and columna_libre:
 					return fila + 1 - largo_barco
 				espacios_libres_continuos = 0
 	return -1
-
-def maxima_cantidad_de_contiguos_disponibles(tablero, tipo_demanda, pos_demanda, demandas_filas_pos, demandas_columnas_pos):
-	maximos_espacios_libres = 0
-	espacios_libres_continuos = 0
-	if tipo_demanda == "f":
-		for columna in range(len(tablero[pos_demanda])):
-			if tablero[pos_demanda][columna] == 0 and demandas_columnas_pos[columna][2] > 0:
-				espacios_libres_continuos += 1
-			else:
-				espacios_libres_continuos = 0
-			siguiente_columna = columna + 1 if columna + 1 < len(tablero[pos_demanda]) else columna
-			columna_anterior = columna - espacios_libres_continuos if columna - espacios_libres_continuos >= 0 else columna + 1 - espacios_libres_continuos
-			if tablero[pos_demanda][siguiente_columna] == 0 or tablero[pos_demanda][columna_anterior] == 0:
-				if maximos_espacios_libres < espacios_libres_continuos:
-					maximos_espacios_libres = espacios_libres_continuos
-			else:
-				espacios_libres_continuos = 0
-	else:
-		for fila in range(len(tablero)):
-			if tablero[fila][pos_demanda] == 0  and demandas_filas_pos[fila][2] > 0:
-				espacios_libres_continuos += 1
-			else:
-				espacios_libres_continuos = 0
-			siguiente_fila = fila + 1 if fila + 1 < len(tablero) else fila
-			fila_anterior = fila - espacios_libres_continuos if fila - espacios_libres_continuos >= 0 else fila + 1 - espacios_libres_continuos
-			if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0:
-				if espacios_libres_continuos > maximos_espacios_libres:
-					maximos_espacios_libres = espacios_libres_continuos
-			else:
-				espacios_libres_continuos = 0
-	return maximos_espacios_libres
 
 def obtener_demanda(info_demanda):
 	return info_demanda[2]
