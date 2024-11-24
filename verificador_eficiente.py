@@ -15,19 +15,41 @@ def verificador_eficiente(tablero, barcos, demanda_fila, demanda_columna):
 				barcos_colocados[celda] = barcos_colocados.get(celda, []) + [(fila_pos, celda_pos)]
 	barcos_copia = barcos.copy()
 	for clave in barcos_colocados:
+		for posicion_inicial in range(len(barcos_colocados[clave])):
+			pos_extremo_inicial = barcos_colocados[clave][posicion_inicial]
+			for posicion_final in range((posicion_inicial + 1, len(barcos_colocados[clave]))):
+				pos_extremo_final = barcos_colocados[clave][posicion_final]
+				diferencia_fila = pos_extremo_final[FILA] - pos_extremo_inicial[FILA]
+				diferencia_columna = pos_extremo_final[COLUMNA] - pos_extremo_inicial[COLUMNA]
+				if diferencia_fila != 0 and diferencia_columna != 0:
+					return False
 		pos_extremo_inicial = barcos_colocados[clave][0]
 		pos_extremo_final = barcos_colocados[clave][-1]
-		diferencia_fila = pos_extremo_final[FILA] - pos_extremo_inicial[FILA]
-		diferencia_columna = pos_extremo_final[COLUMNA] - pos_extremo_inicial[COLUMNA]
-		if diferencia_fila != 0 and diferencia_columna != 0:
-			return False
-		largo_barco = max(diferencia_fila, diferencia_columna) + 1
+		diferencia_fila_total = pos_extremo_final[FILA] - pos_extremo_inicial[FILA]
+		diferencia_columna_total = pos_extremo_final[COLUMNA] - pos_extremo_inicial[COLUMNA]
+		largo_barco = max(diferencia_fila_total, diferencia_columna_total) + 1
 		if largo_barco != barcos[clave - 1]:
+			return False
+		if !es_el_unico_en_radio(tablero, pos_extremo_inicial[FILA], pos_extremo_inicial[COLUMNA], largo_barco, clave, diferencia_columna_total!=0):
 			return False
 		solucion.append((clave - 1, barcos_colocados[clave][0], barcos_colocados[clave][-1]))
 
 
-	return verificar_solucion(barcos, demanda_fila, demanda_columna, solucion)
+	return verificar_solucion(barcos_copia, demanda_fila, demanda_columna, solucion)
+
+def es_el_unico_en_radio(tablero, fila, columna, largo_barco, clave, orientacion_fila):
+	suma_sector = 0
+	if orientacion_fila:
+		for fila_sector in range(max(fila - 1, 0), min(fila + 2, len(tablero))):
+			for columna_sector in range(max(columna - 1, 0), min(columna + largo_barco + 1, len(tablero[fila]))):
+				suma_sector += tablero[fila_sector][columna_sector]
+	else:
+		for fila_sector in range(max(fila - 1, 0), min(fila + largo_barco + 1, len(tablero))):
+			for columna_sector in range(max(columna - 1, 0), min(columna + 2, len(tablero[fila]))):
+				suma_sector += tablero[fila_sector][columna_sector]
+	return suma_sector == clave*largo_barco
+
+
 
 def verificar_solucion(barcos, demanda_fila, demanda_columna, solucion):
 	casilleros_ocupados = {}
@@ -96,9 +118,3 @@ def obtener_direccion(pos_extremo_inicial, pos_extremo_final):
 		return (0, int(diferencia_columna/abs(diferencia_columna)))
 	else:
 		return (int(diferencia_fila/abs(diferencia_fila)), 0)
-
-
-
-def barco_posicionado_a_lo_largo_de_la_columna(barco_posicion):
-	pos_extremo_inicial = barco_posicion[POSICION_EXTREMO_INICIAL]
-	pos_extremo_final = barco_posicion[POSICION_EXTREMO_FINAL]
