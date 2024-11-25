@@ -87,9 +87,6 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 
 
 
-
-
-
 	
 """def prueba():
 	x = pulp.LpVariable("X")

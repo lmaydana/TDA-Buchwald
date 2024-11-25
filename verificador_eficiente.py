@@ -3,6 +3,7 @@ POSICION_EXTREMO_INICIAL = 1
 POSICION_EXTREMO_FINAL = 2
 FILA = 0
 COLUMNA = 1
+
 def verificador_eficiente(tablero, barcos, demanda_fila, demanda_columna):
 	solucion = []
 	barcos_colocados = {}
@@ -82,9 +83,11 @@ def verificar_solucion(barcos, demanda_fila, demanda_columna, solucion):
 	for demanda in demanda_fila_incumplida:
 		if demanda != 0:
 		    return False
+			
 	for demanda in demanda_columna_incumplida:
 		if demanda != 0:
-		    return False
+			return False
+	
 	return True
 
 

@@ -1,6 +1,6 @@
 import time
 import numpy as np
-import batalla_naval as bn
+import batalla_naval_backtracking as bn
 
 def generar_datos_prueba(filas, columnas, num_barcos):
     """

@@ -17,8 +17,8 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 				posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, barcos_aux[pos_barco][1] , demandas_filas_pos, demandas_columnas_pos)
 		
 		if pos_barco >= len(barcos_aux):
-		    demandas_totales.remove(info_demanda)
-		    continue
+			demandas_totales.remove(info_demanda)
+			continue
 		largo_barco = barcos_aux[pos_barco][1]
 
 		if tipo_demanda == "f":

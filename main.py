@@ -1,4 +1,4 @@
-import batalla_naval_programacion_lineal as bn
+import batalla_naval_greedy as bn
 import numpy as np
 
 def cargar_datos_archivo(nombre_archivo):
@@ -12,23 +12,21 @@ def cargar_datos_archivo(nombre_archivo):
     return: Una tupla con (demandas_filas, demandas_columnas, largos_barcos).
     """
     with open(nombre_archivo, 'r') as archivo:
-        # Leer todas las lineas del archivo.
         lineas = archivo.readlines()
-    
-    # Ignorar las dos primeras líneas (comentarios).
+    # Ignorar las dos primeras lineas (comentarios).
     lineas = lineas[2:]
 
-    # Eliminar saltos de linea y lineas en blanco.
     bloques = []
     bloque_actual = []
     for linea in lineas:
         linea = linea.strip()
-        if linea == "":  # Separador entre bloques.
-            if bloque_actual:  # Si hay datos en el bloque actual.
+        if linea == "":
+            if bloque_actual:
                 bloques.append(bloque_actual)
                 bloque_actual = []
         else:
-            bloque_actual.append(int(linea))  # Convertir cada linea en numero.
+            # Convertir cada linea en numero.
+            bloque_actual.append(int(linea))
     
     # Agregar el ultimo bloque si no esta vacio.
     if bloque_actual:
@@ -43,7 +41,6 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-
     archivo_pruebas = ["tests/3_3_2.txt", "tests/5_5_6.txt", "tests/8_7_10.txt", "tests/10_3_3.txt", "tests/10_10_10.txt", "tests/12_12_21.txt", "tests/15_10_15.txt", "tests/20_20_20.txt", "tests/20_25_30.txt", "tests/30_25_25.txt"]
     #for nombre_archivo in archivo_pruebas:
     nombre_archivo = "tests/5_5_6.txt" #input("Ingrese ruta:")
@@ -55,12 +52,14 @@ def main():
      # Convertir las demandas a arrays de NumPy.
     demandas_filas = np.array(demandas_filas)
     demandas_columnas = np.array(demandas_columnas)
+    demanda_total = demandas_filas.sum() + demandas_columnas.sum()
 
     tablero = np.zeros((len(demandas_filas), len(demandas_columnas)), dtype=int)
-    #bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
+
     demanda, mejor_tablero = bn.batalla_naval(tablero, largos_barcos, demandas_filas, demandas_columnas)
 
     print(mejor_tablero)
-    print(f"Demanda ja: {demanda}")
+    print(f"Demanda cumplida: {demanda}")
+    print(f"Demanda total: {demanda_total}")
 
 main()
