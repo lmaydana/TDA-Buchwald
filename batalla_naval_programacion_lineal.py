@@ -9,10 +9,7 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 		fila_variables = []
 		for celda in fila:
 			fila_variables.append(pulp.LpVariable("C(" + str(len(variables_celdas)) + "," + str(len(fila_variables)) + ")", cat="Binary"))
-		#problema += pulp.LpAffineExpression([(d, 1) for d in fila_variables]) <= demandas_filas[len(variables_celdas)]
 		variables_celdas.append(fila_variables)
-	#for indice_columna in range(len(variables_celdas[0])):
-	#	problema += pulp.LpAffineExpression([(vc[indice_columna],1) for vc in variables_celdas]) <= demandas_columnas[indice_columna]
 
 	for indice_barco in range(len(barcos)):
 		variables_barcos.append(pulp.LpVariable("B"+str(indice_barco), cat = "Binary"))
@@ -37,7 +34,6 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 			for comienzo in range(len(tablero[0]) - barcos[indice_barco]):
 				variable_and = pulp.LpVariable("AND_COLUMNAS_ACTIVAS_DESDE_"+str(comienzo)+"_HASTA_"+str(comienzo+barcos[indice_barco]) + "_FILA_"+str(fila)+"BARCO_"+str(indice_barco), cat = "Binary")
 				variable_and_borde_vacio = pulp.LpVariable("AND_BORDE_LIBRE_COLUMNAS_ACTIVAS_DESDE_"+str(comienzo)+"_HASTA_"+str(comienzo+barcos[indice_barco]) + "_FILA_"+str(fila)+"BARCO_"+str(indice_barco), cat = "Binary")
-				#problema += variable_and_borde_vacio*(6 + 2*barcos[indice_barco] - min(0, fila - 1)*(barcos[indice_barco] + 2)) <= pulp.LpAffineExpression([(1 - variables_barcos_posiciones[i_barco][len(tablero[0]*filab + columnab)], 1) for filab in range(max(fila - 1, 0), min(fila + 2, len(tablero))) for columnab in range(max(0, comienzo - 1), min(comienzo + barcos[indice_barco] + 1, len(tablero[0]))) for i_barco in range(0,indice_barco)]) + pulp.LpAffineExpression([(1 - variables_barcos_posiciones[i_barco][len(tablero[0]*filab + columnab)], 1) for filab in range(max(fila - 1, 0), min(fila + 2, len(tablero))) for columnab in range(max(0, comienzo - 1), min(comienzo + barcos[indice_barco] + 1, len(tablero[0]))) for i_barco in range(indice_barco + 1,len(barcos))]) + pulp.LpAffineExpression([(1 - variables_barcos_posiciones[indice_barco][len(tablero[0]*filab + columnab)], 1) for filab in range(max(fila - 1, 0), min(fila + 2, len(tablero))) for columnab in range(max(0, comienzo - 1), min(comienzo + barcos[indice_barco] + 1, len(tablero[0])))]) + barcos[indice_barco]
 				for filab in range(max(fila - 1,0), min(fila + 2, len(tablero))):
 					for columnab in range(max(0,comienzo - 1), min(len(tablero[0]),comienzo + barcos[indice_barco] + 1)):
 						for indice_otro_barco in range(0, indice_barco):
@@ -84,15 +80,3 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 			tablero[fila][columna] = sum([pulp.value(variables_barcos_posiciones[indice_barco][len(tablero[0])*fila + columna])*(indice_barco + 1) for indice_barco in range(len(barcos))])
 	
 	return pulp.value(problema.objective),tablero
-
-
-
-	
-"""def prueba():
-	x = pulp.LpVariable("X")
-	problema = pulp.LpProblem("maxi", pulp.LpMaximize)
-	problema +=x <= 2
-	problema += 3*x + 2
-	problema.solve()
-	print(pulp.value(x))
-prueba()"""
