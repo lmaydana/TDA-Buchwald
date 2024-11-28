@@ -41,9 +41,7 @@ def cargar_datos_archivo(nombre_archivo):
 
 
 def main():
-    archivo_pruebas = ["tests/3_3_2.txt", "tests/5_5_6.txt", "tests/8_7_10.txt", "tests/10_3_3.txt", "tests/10_10_10.txt", "tests/12_12_21.txt", "tests/15_10_15.txt", "tests/20_20_20.txt", "tests/20_25_30.txt", "tests/30_25_25.txt"]
-    #for nombre_archivo in archivo_pruebas:
-    nombre_archivo = "tests/12_12_21.txt" #input("Ingrese ruta:")
+    nombre_archivo = input("Ingrese ruta:")
     demandas_filas, demandas_columnas, largos_barcos = cargar_datos_archivo(nombre_archivo)
     print(nombre_archivo + ", greedy_catedra")
     print("Demandas de filas:", demandas_filas)
