@@ -1,98 +1,79 @@
+import  heapq
+import numpy as np
+TIPO_DEMANDA = 1
+POSICION_DEMANDA = 2
+CANTIDAD_DEMANDA = 0
+INDICE_BARCO = 0
+LARGO_BARCO = 1
 def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
-	demandas_columnas_pos = [["c", i, demandas_columnas[i]] for i in range(len(demandas_columnas))]
-	demandas_filas_pos= [["f", i, demandas_filas[i]] for i in range(len(demandas_filas))]
+	demandas_columnas_pos = [[demandas_columnas[i], "c", i ] for i in range(len(demandas_columnas))]
+	demandas_filas_pos= [[demandas_filas[i], "f", i ] for i in range(len(demandas_filas))]
 	demandas_totales = demandas_columnas_pos + demandas_filas_pos
+	heapq._heapify_max(demandas_totales)
 	barcos_aux = [(n, barcos[n]) for n in range(len(barcos))]
 	barcos_aux.sort(key=lambda numero_largo_barco: numero_largo_barco[1]*(-1))
-	while barcos_aux and existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_columnas_pos, demandas_totales, barcos_aux):
-		info_demanda = max(demandas_totales, key=obtener_demanda)
-		tipo_demanda = info_demanda[0]
-		pos_demanda = info_demanda[1]
-		cantidad_demanda = info_demanda[2]
-		pos_barco = 0
-		posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, barcos_aux[pos_barco][1] , demandas_filas_pos, demandas_columnas_pos)
-		while pos_barco < len(barcos_aux) and (barcos_aux[pos_barco][1] > cantidad_demanda or posicion == -1):
-			pos_barco += 1
-			if pos_barco < len(barcos_aux):
-				posicion = encontrar_posicion(tablero, tipo_demanda, pos_demanda, barcos_aux[pos_barco][1] , demandas_filas_pos, demandas_columnas_pos)
-		
-		if pos_barco >= len(barcos_aux):
-			demandas_totales.remove(info_demanda)
-			continue
-		largo_barco = barcos_aux[pos_barco][1]
-
-		if tipo_demanda == "f":
-			for j in range(largo_barco):
-				tablero[pos_demanda][posicion + j] = barcos_aux[pos_barco][0] + 1
-				demandas_columnas_pos[posicion + j][2] -= 1
-		else:
-			for j in range(largo_barco):
-				tablero[posicion + j][pos_demanda] = barcos_aux[pos_barco][0] + 1
-				demandas_filas_pos[posicion + j][2] -= 1
-		barcos_aux.pop(pos_barco)
-		info_demanda[2] -= largo_barco
+	indices_disponibles = {i: True for i in range(len(barcos_aux))}
+	while barcos_aux and demandas_totales:
+		indice_barco = 0
+		info_demanda = heapq._heappop_max(demandas_totales)
+		tipo_demanda = info_demanda[TIPO_DEMANDA]
+		pos_demanda = info_demanda[POSICION_DEMANDA]
+		casilleros_a_probar = len(demandas_filas) if tipo_demanda == "c" else len(demandas_columnas)
+		for indice_barco in indices_disponibles:
+			info_barco = barcos_aux[indice_barco]
+			barco = info_barco[LARGO_BARCO]
+			for celda in range(casilleros_a_probar - barco + 1):
+				fila_a_probar = pos_demanda if tipo_demanda == "f" else celda
+				columna_a_probar = pos_demanda if tipo_demanda == "c" else celda
+				demandas = demandas_columnas_pos if tipo_demanda == "c" else demandas_filas_pos
+				demandas_perpendiculares = demandas_filas_pos if tipo_demanda == "c" else demandas_columnas_pos
+				if entra_barco(barco, tablero, fila_a_probar, columna_a_probar, tipo_demanda, pos_demanda, demandas, demandas_perpendiculares):
+					colocar_barco(info_barco, tablero, tipo_demanda, fila_a_probar, columna_a_probar)
+					info_demanda[CANTIDAD_DEMANDA] -= barco
+					reducir_demandas_perpendiculares(celda, barco, demandas_perpendiculares)
+					heapq.heappush(demandas_totales, info_demanda)
+					heapq._heapify_max(demandas_totales)
+					indices_disponibles.pop(indice_barco)
+					break
+			if indice_barco not in indices_disponibles:
+				break
+			indice_barco += 1
 
 	return (sum(demandas_filas) + sum(demandas_columnas) - devolver_demanda_total_cumplida(demandas_filas_pos) - devolver_demanda_total_cumplida(demandas_columnas_pos)), tablero
+
+def entra_barco(barco, tablero, fila_a_probar, columna_a_probar, tipo_demanda, pos_demanda, demandas, demandas_perpendiculares):
+	if demandas[pos_demanda][CANTIDAD_DEMANDA] < barco:
+		return False
+	if tipo_demanda == "c" and fila_a_probar + barco > len(demandas_perpendiculares) or tipo_demanda == "f" and columna_a_probar + barco > len(demandas_perpendiculares):
+		return False
+	if tipo_demanda == "c" and not np.all(tablero[max(fila_a_probar - 1, 0): min(fila_a_probar + barco + 1, len(demandas_perpendiculares)), max(columna_a_probar - 1, 0): min(columna_a_probar + 2, len(demandas))] == 0) or tipo_demanda == "f" and not np.all(tablero[max(0, fila_a_probar - 1): min(fila_a_probar + 2, len(demandas)), max(0, columna_a_probar - 1): min(columna_a_probar + barco + 1, len(demandas_perpendiculares))] == 0):
+		return False
+
+	if tipo_demanda == "c" and not son_todas_las_demandas_contiguas_positivas(fila_a_probar, barco, demandas_perpendiculares) or tipo_demanda == "f" and not son_todas_las_demandas_contiguas_positivas(columna_a_probar, barco, demandas_perpendiculares):
+		return False
+	
+	return True
+
+def son_todas_las_demandas_contiguas_positivas(posicion, barco, demandas):
+	for pos in range(posicion, min(posicion + barco, len(demandas))):
+		if demandas[pos][CANTIDAD_DEMANDA] <= 0:
+			return False
+	return True
+
+def colocar_barco(info_barco, tablero, tipo_demanda, fila_a_probar, columna_a_probar):
+	posicion_a_probar = fila_a_probar if tipo_demanda == "c" else columna_a_probar
+	for posicion in range(posicion_a_probar, posicion_a_probar + info_barco[LARGO_BARCO]):
+		fila = fila_a_probar if tipo_demanda == "f" else posicion
+		columna = columna_a_probar if tipo_demanda == "c" else posicion
+		tablero[fila][columna] = info_barco[INDICE_BARCO] + 1
+
+
+def reducir_demandas_perpendiculares(posicion_perpendicular, barco, demandas_perpendiculares):
+	for posicion in range(posicion_perpendicular, posicion_perpendicular + barco):
+		demandas_perpendiculares[posicion][CANTIDAD_DEMANDA] -= 1
 
 def devolver_demanda_total_cumplida(demandas_totales):
 	demanda_cumplida = 0
 	for info_demanda in demandas_totales:
-		demanda_cumplida += info_demanda[2]
+		demanda_cumplida += info_demanda[CANTIDAD_DEMANDA]
 	return demanda_cumplida
-
-
-def existe_barco_que_entre_en_demanda(tablero, demandas_filas_pos, demandas_columnas_pos, demandas_totales, barcos_aux):
-	demandas_totales_aux = demandas_totales.copy()
-	demandas_totales_aux.sort(key=obtener_demanda)
-	demandas_totales_aux.reverse()
-	largo_barco_mas_chico = barcos_aux[-1][1]
-	for demanda in demandas_totales_aux:
-		if demanda[0] == "f" and demandas_filas_pos[demanda[1]][2] < largo_barco_mas_chico or demanda[0] == "c" and demandas_columnas_pos[demanda[1]][2] < largo_barco_mas_chico:
-			return False
-		if encontrar_posicion(tablero, demanda[0], demanda[1], largo_barco_mas_chico, demandas_filas_pos, demandas_columnas_pos) != -1:
-			return True 
-	return False
-
-def encontrar_posicion(tablero, tipo_demanda, pos_demanda, largo_barco, demandas_filas_pos, demandas_columnas_pos):
-	espacios_libres_continuos = 0
-	if tipo_demanda == "f":
-		for columna in range(len(tablero[pos_demanda])):
-			if tablero[pos_demanda][columna] == 0 and demandas_columnas_pos[columna][2] > 0:
-				espacios_libres_continuos += 1
-			else:
-				espacios_libres_continuos = 0
-			if espacios_libres_continuos == largo_barco:
-				siguiente_columna = columna + 1 if columna + 1 < len(tablero[pos_demanda]) else columna
-				columna_anterior = columna - largo_barco if columna - largo_barco >= 0 else columna + 1 - largo_barco
-				fila_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
-				fila_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero) else pos_demanda - 1
-				fila_libre = True
-				for col in range(columna_anterior, siguiente_columna + 1):
-
-					if tablero[fila_anterior][col] != 0 or tablero[fila_siguiente][col] != 0:
-						fila_libre = False
-				if tablero[pos_demanda][siguiente_columna] == 0 and tablero[pos_demanda][columna_anterior] == 0 and fila_libre:
-					return columna + 1 - largo_barco
-				espacios_libres_continuos = 0
-	else:
-		for fila in range(len(tablero)):
-			if tablero[fila][pos_demanda] == 0  and demandas_filas_pos[fila][2] > 0:
-				espacios_libres_continuos += 1
-			else:
-				espacios_libres_continuos = 0
-			if espacios_libres_continuos == largo_barco:
-				siguiente_fila = fila + 1 if fila + 1 < len(tablero) else fila
-				fila_anterior = fila - largo_barco if fila - largo_barco >= 0 else fila + 1 - largo_barco
-				columna_anterior = pos_demanda - 1 if pos_demanda - 1 >= 0 else pos_demanda + 1
-				columna_siguiente = pos_demanda + 1 if pos_demanda + 1 < len(tablero[0]) else pos_demanda - 1
-				columna_libre = True
-				for fil in range(fila_anterior, siguiente_fila + 1):
-					if tablero[fil][columna_anterior] != 0 or tablero[fil][columna_siguiente] != 0:
-						columna_libre = False
-				if tablero[siguiente_fila][pos_demanda] == 0 and tablero[fila_anterior][pos_demanda] == 0 and columna_libre:
-					return fila + 1 - largo_barco
-				espacios_libres_continuos = 0
-	return -1
-
-def obtener_demanda(info_demanda):
-	return info_demanda[2]
