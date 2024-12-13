@@ -13,7 +13,7 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 	barcos_aux = [(n, barcos[n]) for n in range(len(barcos))]
 	barcos_aux.sort(key=lambda numero_largo_barco: numero_largo_barco[1]*(-1))
 	indices_disponibles = {i: True for i in range(len(barcos_aux))}
-	while barcos_aux and demandas_totales:
+	while indices_disponibles and demandas_totales:
 		indice_barco = 0
 		info_demanda = heapq._heappop_max(demandas_totales)
 		tipo_demanda = info_demanda[TIPO_DEMANDA]
