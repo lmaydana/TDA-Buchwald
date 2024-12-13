@@ -1,8 +1,8 @@
 import  heapq
 import numpy as np
+CANTIDAD_DEMANDA = 0
 TIPO_DEMANDA = 1
 POSICION_DEMANDA = 2
-CANTIDAD_DEMANDA = 0
 INDICE_BARCO = 0
 LARGO_BARCO = 1
 def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
