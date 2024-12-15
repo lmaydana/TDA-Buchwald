@@ -32,7 +32,7 @@ def puede_colocar_barco(tablero, barco, fila, columna, orientacion, demandas_fil
     return False
 
 
-def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_fila, demandas_columna):
+def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_fila, demandas_columna, solucion):
     """
     Coloca o retira un barco en el tablero, eligiendo la direccion y actualiza demandas.
     - Si es horizontal ('H'), elige extenderse a la derecha.
@@ -43,24 +43,32 @@ def colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas
             tablero[fila][columna + i] = id_barco
             if id_barco != 0:
                 demandas_columna[columna + i] -= 1
+                solucion[0] -= 1
             else:
                 demandas_columna[columna + i] += 1
+                solucion[0] += 1
         if id_barco != 0:
             demandas_fila[fila] -= barco
+            solucion[0] -= barco
         else:
             demandas_fila[fila] += barco
+            solucion[0] += barco
 
     elif orientacion == 'V':
         for i in range(barco):
             tablero[fila + i][columna] = id_barco 
             if id_barco != 0:
                 demandas_fila[fila + i] -= 1
+                solucion[0] -= 1
             else:
                 demandas_fila[fila + i] += 1
+                solucion[0] += 1
         if id_barco != 0:
             demandas_columna[columna] -= barco
+            solucion[0] -= barco
         else:
             demandas_columna[columna] += barco
+            solucion[0] += barco
 
 
 def obtener_filas_columnas_prioritarias(demandas_filas, demandas_columnas):
@@ -80,7 +88,6 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
     demanda_total = demandas_filas.sum() + demandas_columnas.sum()
     sol_optima = [demanda_total, tablero.copy(), 0]
     sol_parcial = [demanda_total, tablero.copy(), 0] #[demanda incumplida, tablero, ultimo barco usado]
-
     batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, 0, sol_parcial, sol_optima)
     return demanda_total - sol_optima[0], sol_optima[1]
 
@@ -109,12 +116,8 @@ def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, indice,
         que el actual, salteamos.
         """
         return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, indice + 1, sol_parcial, sol_optima)
-    
-    cota_superior = sum(max(0, d - barco) for d in demandas_filas) + sum(max(0, d - barco) for d in demandas_columnas)
-    if cota_superior >= sol_optima[0]:
-        return
 
-    if demandas_filas.sum() + demandas_columnas.sum() - (sum(barcos[indice:])*2) >= sol_optima[0]:
+    if sol_parcial[0] - (sum(barcos[indice:])*2) >= sol_optima[0]:
         """
         Si las demandas pendientes menos la sumatoria de los largos de los barcos que quedan multiplicada por 2
         todavia no alcanza para ser menor a la solucion optima, descartamos esta rama.
@@ -131,15 +134,14 @@ def batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, indice,
             for orientacion in ['H', 'V']:
                 if puede_colocar_barco(tablero, barco, fila, columna, orientacion, demandas_filas, demandas_columnas):
                     # Colocar barco.
-                    colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas)
+                    colocar_barco(tablero, barco, fila, columna, orientacion, id_barco, demandas_filas, demandas_columnas, sol_parcial)
 
-                    sol_parcial[0] = demandas_filas.sum() + demandas_columnas.sum()
                     sol_parcial[1] = tablero.copy()
                     sol_parcial[2] = barco
 
                     if sol_parcial[0] < sol_optima[0] or sol_parcial[0] - barcos[-1]*2 >= 0:
                         batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, indice + 1, sol_parcial, sol_optima)
                     # Retirar barco.
-                    colocar_barco(tablero, barco, fila, columna, orientacion, 0, demandas_filas, demandas_columnas)
+                    colocar_barco(tablero, barco, fila, columna, orientacion, 0, demandas_filas, demandas_columnas, sol_parcial)
 
     return batalla_naval_bt(tablero, barcos, demandas_filas, demandas_columnas, indice + 1, sol_parcial, sol_optima)
