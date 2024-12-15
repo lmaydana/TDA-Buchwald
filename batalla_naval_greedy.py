@@ -24,10 +24,10 @@ def batalla_naval(tablero, barcos, demandas_filas, demandas_columnas):
 			demandas = demandas_columnas_pos if tipo_demanda == "c" else demandas_filas_pos
 			demandas_perpendiculares = demandas_filas_pos if tipo_demanda == "c" else demandas_columnas_pos
 			celda = obtener_posicion(barco, tablero, pos_demanda, tipo_demanda, demandas, demandas_perpendiculares)
-			fila_a_probar = pos_demanda if tipo_demanda == "f" else celda
-			columna_a_probar = pos_demanda if tipo_demanda == "c" else celda
 			if celda != -1:
-				colocar_barco(info_barco, tablero, tipo_demanda, fila_a_probar, columna_a_probar)
+				fila_encontrada = pos_demanda if tipo_demanda == "f" else celda
+				columna_encontrada = pos_demanda if tipo_demanda == "c" else celda
+				colocar_barco(info_barco, tablero, tipo_demanda, fila_encontrada, columna_encontrada)
 				info_demanda[CANTIDAD_DEMANDA] -= barco
 				reducir_demandas_perpendiculares(celda, barco, demandas_perpendiculares)
 				heapq.heappush(demandas_totales, info_demanda)
