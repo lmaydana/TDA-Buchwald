@@ -1,4 +1,4 @@
-import batalla_naval_greedy_propio as bn
+import batalla_naval_backtracking as bn
 import numpy as np
 
 def cargar_datos_archivo(nombre_archivo):
